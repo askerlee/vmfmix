@@ -21,7 +21,7 @@ class vmfMix:
         self.MAX_EM_ITERS = kwargs.get( 'MAX_EM_ITERS', 100 )
         self.TDiff_tolerance = kwargs.get( 'TDiff_tolerance', 2e-3 )
         # maximum difference between kappa's of different components
-        self.max_kappa_diff = kwargs.get( 'max_kappa_diff', 400 )
+        self.max_kappa = kwargs.get( 'max_kappa', 50 )
         self.seed = kwargs.get( 'seed', 0 )
         self.verbose = kwargs.get( 'verbose', 1 )
 
@@ -88,10 +88,8 @@ class vmfMix:
         # rbar <= 0.95  ->  kappa < 5200 when D=500. 
         rbar[rbar > 0.95] = 0.95
         self.kappa = ( self.D * rbar - np.power( rbar, 3 ) ) / ( 1 - np.power( rbar, 2 ) )
-        # maximal allowed kappa
-        max_kappa = np.min(self.kappa) + self.max_kappa_diff
         # cap excessively big kappa to max_kappa
-        self.kappa[ self.kappa > max_kappa ] = max_kappa
+        self.kappa[ self.kappa > self.max_kappa ] = self.max_kappa
         self.calc_logcd()
         TDiff = self.T - oldT
         # max_tdiff: K-dim vector
@@ -312,7 +310,8 @@ class vmfMix:
             self.updatePi()
             self.calc_n()
             self.updateFi()
-
+            self.calc_r()
+            
             if i > 0:
                 Pi_diff = np.zeros(self.M)
                 for i in xrange(self.M):
@@ -323,6 +322,7 @@ class vmfMix:
                 max_Pi_diff = 0
                 total_Pi_diff = 0
 
+            loglike = self.calcVarLB()
             iterDur = time.time() - iterStartTime
             print "Iter %d loglike %.2f, Pi diff total %.3f, max %.3f. %.1fs" %( i, 
                                  loglike, total_Pi_diff, max_Pi_diff, iterDur )
