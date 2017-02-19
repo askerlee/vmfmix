@@ -1,5 +1,6 @@
+.gitignore
 commit.bat
-*.lyx
-*.bib
+*.lyx*
+*.bib*
 *.py[cod]
 
