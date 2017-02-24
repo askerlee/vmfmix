@@ -2,5 +2,7 @@
 commit.bat
 *.lyx*
 *.bib*
-*.py[cod]
+*.bbl
+*.tex
+*.pyc
 

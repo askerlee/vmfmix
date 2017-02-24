@@ -450,6 +450,7 @@ class vmfMix:
         """
 
         X = self.X[0]
+        freqs = self.Freqs[0]
         centers = randomsample( X, self.K )
 
         if self.verbose:
@@ -480,7 +481,7 @@ class vmfMix:
                 # np.where(..)[0]: array of indices
                 c = np.where( xtoc == k )[0]
                 if len(c) > 0:
-                    centers[k] = X[c].mean( axis=0 )
+                    centers[k] = ( X[c] * freqs[c, None] ).mean( axis=0 )
                     centers[k] = normalizeF(centers[k])
 
         if self.verbose:
