@@ -183,7 +183,17 @@ class vmfMix:
         # this is the case when X is image neural encodings. 
         # Update equations will fall back to the exact equations in the vmf-mixture document.
         # if X is word embeddings in documents, then Freqs should be word frequencies
-        self.Tags = Tags
+        
+        if Tags is None:
+            self.Tags = []
+            for i in xrange(self.M):
+                tags = []
+                for j in xrange( self.X[i].shape[0] ):
+                    tags.append( '%d-%d' %(i,j) )
+                self.Tags.append(tags)
+        else:
+            self.Tags = Tags       
+                  
         if Freqs is None:
             self.Freqs = []
             for i in xrange(self.M):
@@ -206,11 +216,7 @@ class vmfMix:
         tag2x = {}
         for i in xrange(self.M):
             for j in xrange( self.X[i].shape[0] ):
-                if self.Tags is None:
-                    tag = '%d-%d' %(i,j)
-                else:
-                    tag = self.Tags[i][j]
-
+                tag = self.Tags[i][j]
                 if self.evalKmeans:
                     k = self.kmeans_xtoc[j]
                     topic_tag2prop[k][tag] += 1

@@ -191,7 +191,8 @@ if onlyInferTopicProp:
     kappa = T_kappa[:,0]
     T = T_kappa[:,1:]
     config['K'] = T.shape[0]
-
+    
+config['logfilename'] = corpusName
 vmfmixer = vmfMix(**config)
 out0 = vmfmixer.genOutputter(0)
 out1 = vmfmixer.genOutputter(1)
@@ -208,7 +209,6 @@ for si, subsetName in enumerate(subsetNames):
             cats_docNames, category_names = loader(subsetName)
     catNum = len(category_names)
     basename = "%s-%s-%d" %( corpusName, subsetName, subsetDocNum )
-    config['logfilename'] = basename
 
     # dump original words (without filtering)
     orig_filename = "%s.orig.txt" %basename
