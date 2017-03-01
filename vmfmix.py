@@ -219,7 +219,7 @@ class vmfMix:
                 tag = self.Tags[i][j]
                 if self.evalKmeans:
                     k = self.kmeans_xtoc[j]
-                    topic_tag2prop[k][tag] += 1
+                    topic_tag2prop[k][tag] += self.Freqs[i][j]
                 else:
                     for k in xrange(self.K):
                         # a tag may appear multiple times, e.g. words in documents

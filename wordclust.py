@@ -55,7 +55,26 @@ def loadwordvecs(unigramFilename, wordvecFilename):
         np.save( embedding_npyfile, embedding_arrays )
         
     V = normalizeF(V)
-    return V, word2ID
+    
+    # u: unigram probs
+    u = []
+    oovcount = 0
+    unigram_oov_prior = 0.000001
+    for wid,w in enumerate(vocab):
+        if w not in vocab_dict:
+            oovcount += 1
+            u.append(unigram_oov_prior)
+        else:
+            u.append( vocab_dict[w][2] )
+
+    if oovcount > 0:
+        print "%d words in '%s' but not in '%s'. Unigram prob set to oov prior %.3g" %(oovcount, wordvecFilename, 
+                unigramFilename, unigram_oov_prior)
+        
+    u = np.array(u)
+    u = normalize(u)
+
+    return V, word2ID, u
 
 def docSentences2embeddings(docs_wordsInSentences, V, word2ID, remove_stop=True):
     X = []
@@ -167,9 +186,11 @@ if not onlyGetOriginalText:
 # the embedding file to a compact word ID list, to speed up computation of sLDA
 # The mapping has to be done on 'all' to include all words in train and test sets
     subsetNames = [ 'all-mapping' ] + subsetNames
-    V, word2ID = loadwordvecs(config['unigramFilename'], config['wordvecFilename'])
+    V, word2ID, u = loadwordvecs(config['unigramFilename'], config['wordvecFilename'])
+# no need to load embeddings
 else:
-    V, word2ID = None, None
+    V, word2ID, u = None, None, None
+# u is not used in vmfmix
         
 if MAX_ITERS > 0:
     if onlyInferTopicProp:
@@ -191,6 +212,12 @@ if onlyInferTopicProp:
     kappa = T_kappa[:,0]
     T = T_kappa[:,1:]
     config['K'] = T.shape[0]
+elif separateCatTraining:
+    # infer topics for each category, combine them and save in one file
+    if corpusName == "20news":
+        config['K'] = config['sepK_20news']
+    else:
+        config['K'] = config['sepK_reuters']
     
 config['logfilename'] = corpusName
 vmfmixer = vmfMix(**config)
@@ -327,12 +354,6 @@ for si, subsetName in enumerate(subsetNames):
             save_matrix_as_text( basename + "-em%d.vmftopic.prop" %config['MAX_EM_ITERS'], "topic proportion", ni_k, docs_cat, docs_name, colSep="\t" )
 
         else:
-            # infer topics for each category, combine them and save in one file
-            if corpusName == "20news":
-                vmfmixer.K = config['sepK_20news']
-            else:
-                vmfmixer.K = config['sepK_reuters']
-                
             best_Tkappa = []
             last_Tkappa = []
             slim_Tkappa = []
